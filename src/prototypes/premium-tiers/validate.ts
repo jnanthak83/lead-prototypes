@@ -1,31 +1,33 @@
+import { deriveLows, formatCurrency } from './format'
 import type { DraftTier, TierErrors } from './types'
 
 /**
- * Validate one draft row: numbers only, required fields present, high >= low.
- * (Letters are already stripped at the input, so this mostly catches blanks
- * and an upper bound that sits below the lower bound.)
+ * Validate the whole draft at once. Because each low is derived from the
+ * previous high, ranges can never overlap; we only need each high to be a
+ * number greater than its (derived) low, plus a numeric premium. Only the last
+ * tier may be unbounded.
  */
-export function validateDraft(d: DraftTier): TierErrors {
-  const errors: TierErrors = {}
-  const low = Number(d.low)
-  const high = d.high.trim() === '' ? null : Number(d.high)
-  const premium = Number(d.premium)
+export function validateDrafts(drafts: DraftTier[]): TierErrors[] {
+  const lows = deriveLows(drafts)
+  const lastIndex = drafts.length - 1
 
-  if (d.low.trim() === '' || Number.isNaN(low)) {
-    errors.low = 'Enter a number'
-  }
+  return drafts.map((d, i) => {
+    const errors: TierErrors = {}
 
-  if (d.high.trim() !== '' && Number.isNaN(high)) {
-    errors.high = 'Enter a number'
-  } else if (high !== null && !Number.isNaN(low) && high < low) {
-    errors.high = 'Must be ≥ low'
-  }
+    if (d.unbounded) {
+      if (i !== lastIndex) errors.high = 'Only the last tier can be unbounded'
+    } else if (d.high.trim() === '' || Number.isNaN(Number(d.high))) {
+      errors.high = 'Enter a number'
+    } else if (!Number.isNaN(lows[i]) && Number(d.high) <= lows[i]) {
+      errors.high = `Must be greater than ${formatCurrency(lows[i])}`
+    }
 
-  if (d.premium.trim() === '' || Number.isNaN(premium)) {
-    errors.premium = 'Enter a number'
-  }
+    if (d.premium.trim() === '' || Number.isNaN(Number(d.premium))) {
+      errors.premium = 'Enter a number'
+    }
 
-  return errors
+    return errors
+  })
 }
 
 export const hasErrors = (e: TierErrors): boolean => Object.keys(e).length > 0

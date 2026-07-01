@@ -1,21 +1,22 @@
-/** A pricing tier as stored/persisted — numbers are the source of truth. */
+/** A pricing tier as stored/persisted. `low` is derived (previous tier's
+ *  high + 1) and kept here for convenience; `high === null` means unbounded (∞). */
 export interface Tier {
   id: string
   low: number
-  high: number | null // null = unbounded (∞)
+  high: number | null
   premium: number // decimal fraction, e.g. 0.13 == 13%
 }
 
-/** A tier while it is being edited — every field is the raw string in its input. */
+/** A tier while being edited. `low` is not edited — it is derived from the
+ *  previous tier's high — so only `high`, `premium`, and the unbounded flag live here. */
 export interface DraftTier {
   id: string
-  low: string
-  high: string // '' == unbounded (∞)
+  high: string // whole-dollar amount as typed; ignored when `unbounded`
   premium: string // percentage value as typed, e.g. '13' or '12.5'
+  unbounded: boolean // true == this (last) tier runs to ∞
 }
 
 export interface TierErrors {
-  low?: string
   high?: string
   premium?: string
 }

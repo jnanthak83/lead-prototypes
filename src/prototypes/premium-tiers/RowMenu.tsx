@@ -75,7 +75,7 @@ export function RowMenu({ onAddAbove, onAddBelow, onRemove, label }: RowMenuProp
           role="menu"
           aria-label={label}
           onKeyDown={onMenuKeyDown}
-          className="absolute right-0 top-7 z-10 w-40 overflow-hidden rounded-tile border border-stroke bg-surface-100 py-1 shadow-lg"
+          className="t-dropdown-in absolute right-0 top-7 z-10 w-40 overflow-hidden rounded-tile border border-stroke bg-surface-100 py-1 shadow-lg"
         >
           <MenuItem onClick={run(onAddAbove)} icon={<Plus className="size-4" />} label="Add tier above" />
           <MenuItem onClick={run(onAddBelow)} icon={<Plus className="size-4" />} label="Add tier below" />

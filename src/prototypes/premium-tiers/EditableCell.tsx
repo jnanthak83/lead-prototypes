@@ -30,7 +30,7 @@ export function EditableCell({
       <span
         className={`flex h-8 items-center gap-1 rounded-xs border bg-surface-100 px-2 ${
           invalid
-            ? 'border-error ring-1 ring-error'
+            ? 't-shake border-error ring-1 ring-error'
             : 'border-stroke focus-within:border-brand focus-within:ring-1 focus-within:ring-brand'
         }`}
       >
@@ -56,7 +56,7 @@ export function EditableCell({
         )}
       </span>
       {error && (
-        <span id={errorId} role="alert" className="text-xs text-error">
+        <span id={errorId} role="alert" className="t-error-in text-xs text-error">
           {error}
         </span>
       )}

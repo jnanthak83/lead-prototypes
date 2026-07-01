@@ -40,3 +40,48 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/* Motion — a small subset of transitions.dev (Jakubantalik/transitions.dev):
+   the overflow menu grows from its trigger, invalid fields shake, and error
+   messages reveal. Reduced-motion users get none of it. */
+:root {
+  --dropdown-open-dur: 250ms;
+  --dropdown-pre-scale: 0.97;
+  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --shake-distance: 6px;
+  --shake-overshoot: 4px;
+  --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --error-msg-dur: 200ms;
+}
+
+.t-dropdown-in {
+  transform-origin: top right;
+  animation: t-dropdown-in var(--dropdown-open-dur) var(--dropdown-ease);
+}
+@keyframes t-dropdown-in {
+  from { opacity: 0; transform: scale(var(--dropdown-pre-scale)); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.t-shake { animation: t-input-shake 280ms linear; }
+@keyframes t-input-shake {
+  0% { transform: translateX(0); animation-timing-function: var(--shake-ease); }
+  28.57% { transform: translateX(var(--shake-distance)); animation-timing-function: var(--shake-ease); }
+  57.14% { transform: translateX(calc(var(--shake-distance) * -1)); animation-timing-function: var(--shake-ease); }
+  78.57% { transform: translateX(var(--shake-overshoot)); animation-timing-function: var(--shake-ease); }
+  100% { transform: translateX(0); }
+}
+
+.t-error-in { animation: t-error-in var(--error-msg-dur) ease-out; }
+@keyframes t-error-in {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-dropdown-in,
+  .t-shake,
+  .t-error-in {
+    animation: none !important;
+  }
+}

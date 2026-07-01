@@ -1,15 +1,21 @@
 import { EditableCell } from './EditableCell'
+import { HighCell } from './HighCell'
 import { RowMenu } from './RowMenu'
-import { formatCurrency, formatHigh, formatPercent, sanitizeDecimal, sanitizeInteger } from './format'
+import { formatCurrency, formatHigh, formatLow, formatPercent, sanitizeDecimal, sanitizeInteger } from './format'
 import type { DraftTier, Tier, TierErrors } from './types'
 
 interface TierRowProps {
   index: number
   editing: boolean
+  // read-only row
   tier?: Tier
+  // editable row
   draft?: DraftTier
+  low?: number // derived low bound, for display
+  isLast?: boolean
   error?: TierErrors
-  onField?: (field: keyof DraftTier, value: string) => void
+  onField?: (field: 'high' | 'premium', value: string) => void
+  onUnbounded?: (next: boolean) => void
   onAddAbove?: () => void
   onAddBelow?: () => void
   onRemove?: () => void
@@ -40,26 +46,19 @@ export function TierRow(props: TierRowProps) {
   return (
     <tr className="bg-shift-100">
       <td className={`${cell} pt-4 text-default`}>{tierNo}</td>
-      <td className={cell}>
-        <EditableCell
-          prefix="$"
-          value={d.low}
-          placeholder="0"
-          invalid={!!e.low}
-          error={e.low}
-          ariaLabel={`Tier ${tierNo} low bound`}
-          onChange={(v) => props.onField!('low', sanitizeInteger(v))}
-        />
+      <td className={`${cell} pt-4 text-default`} title="Derived from the previous tier's high + 1">
+        {formatLow(props.low ?? NaN)}
       </td>
       <td className={cell}>
-        <EditableCell
-          prefix="$"
+        <HighCell
           value={d.high}
-          placeholder="∞"
+          unbounded={d.unbounded}
+          canBeUnbounded={!!props.isLast}
           invalid={!!e.high}
           error={e.high}
-          ariaLabel={`Tier ${tierNo} high bound (blank = unbounded)`}
+          ariaLabel={`Tier ${tierNo} high bound`}
           onChange={(v) => props.onField!('high', sanitizeInteger(v))}
+          onToggleUnbounded={props.onUnbounded!}
         />
       </td>
       <td className={cell}>
