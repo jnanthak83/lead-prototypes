@@ -5,6 +5,7 @@
    text-brand, border-brand; --radius-tile -> rounded-tile). */
 @theme {
   --color-brand: #3237ff;
+  --color-highlight: #335fff; /* "new / needs input" state on a fresh field */
   --color-emphasis: #121215;
   --color-default: #494d5a;
   --color-muted: #7e8395;
@@ -60,15 +61,15 @@ body {
   100% { transform: translateX(0); }
 }
 
-.t-error-in { animation: t-error-in var(--error-msg-dur) ease-out; }
-@keyframes t-error-in {
+.t-msg-in { animation: t-msg-in var(--error-msg-dur) ease-out; }
+@keyframes t-msg-in {
   from { opacity: 0; transform: translateY(-2px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .t-shake,
-  .t-error-in {
+  .t-msg-in {
     animation: none !important;
   }
 }

@@ -2,7 +2,8 @@ import { EditableCell } from './EditableCell'
 import { HighCell } from './HighCell'
 import { Trash } from '../../components/icons'
 import { formatCurrency, formatHigh, formatLow, formatPercent, sanitizeHigh, sanitizeMath } from './format'
-import type { DraftTier, Tier, TierErrors } from './types'
+import type { FieldStatus } from './validate'
+import type { DraftTier, Tier } from './types'
 
 interface TierRowProps {
   index: number
@@ -13,7 +14,10 @@ interface TierRowProps {
   draft?: DraftTier
   low?: number // derived low bound, for display
   isLast?: boolean
-  error?: TierErrors
+  highStatus?: FieldStatus
+  highMessage?: string
+  premiumStatus?: FieldStatus
+  premiumMessage?: string
   onField?: (field: 'high' | 'premium', value: string) => void
   onCommit?: (field: 'high' | 'premium') => void
   onUnbounded?: (next: boolean) => void
@@ -41,7 +45,6 @@ export function TierRow(props: TierRowProps) {
   }
 
   const d = props.draft!
-  const e = props.error ?? {}
   return (
     <tr className="bg-shift-100">
       <td className={`${cell} pt-4 text-default`}>{tierNo}</td>
@@ -53,8 +56,8 @@ export function TierRow(props: TierRowProps) {
           value={d.high}
           unbounded={d.unbounded}
           canBeUnbounded={!!props.isLast}
-          invalid={!!e.high}
-          error={e.high}
+          status={props.highStatus ?? 'valid'}
+          message={props.highMessage}
           ariaLabel={`Tier ${tierNo} high bound`}
           onChange={(v) => props.onField!('high', sanitizeHigh(v))}
           onCommit={() => props.onCommit!('high')}
@@ -66,8 +69,8 @@ export function TierRow(props: TierRowProps) {
           suffix="%"
           value={d.premium}
           placeholder="0"
-          invalid={!!e.premium}
-          error={e.premium}
+          status={props.premiumStatus ?? 'valid'}
+          message={props.premiumMessage}
           ariaLabel={`Tier ${tierNo} premium percentage`}
           onChange={(v) => props.onField!('premium', sanitizeMath(v))}
           onCommit={() => props.onCommit!('premium')}

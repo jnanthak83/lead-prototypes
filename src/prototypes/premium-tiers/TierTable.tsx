@@ -1,11 +1,21 @@
 import { TierRow } from './TierRow'
 import { Plus } from '../../components/icons'
 import { deriveLows } from './format'
+import { fieldStatus } from './validate'
 import type { useTiers } from './useTiers'
 
 type Props = Pick<
   ReturnType<typeof useTiers>,
-  'tiers' | 'draft' | 'editing' | 'errors' | 'updateField' | 'commitField' | 'setUnbounded' | 'addEnd' | 'remove'
+  | 'tiers'
+  | 'draft'
+  | 'editing'
+  | 'errors'
+  | 'touched'
+  | 'updateField'
+  | 'commitField'
+  | 'setUnbounded'
+  | 'addEnd'
+  | 'remove'
 >
 
 const head = 'px-2 py-1 text-left text-sm font-medium text-emphasis'
@@ -17,6 +27,7 @@ export function TierTable({
   draft,
   editing,
   errors,
+  touched,
   updateField,
   commitField,
   setUnbounded,
@@ -62,21 +73,27 @@ export function TierTable({
             </tr>
           )}
           {editing
-            ? draft!.map((row, i) => (
-                <TierRow
-                  key={row.id}
-                  index={i}
-                  editing
-                  draft={row}
-                  low={lows[i]}
-                  isLast={i === draft!.length - 1}
-                  error={errors[i]}
-                  onField={(f, v) => updateField(row.id, f, v)}
-                  onCommit={(f) => commitField(row.id, f)}
-                  onUnbounded={(next) => setUnbounded(row.id, next)}
-                  onRemove={() => remove(row.id)}
-                />
-              ))
+            ? draft!.map((row, i) => {
+                const e = errors[i]
+                return (
+                  <TierRow
+                    key={row.id}
+                    index={i}
+                    editing
+                    draft={row}
+                    low={lows[i]}
+                    isLast={i === draft!.length - 1}
+                    highStatus={fieldStatus(e.high, !!touched[`${row.id}:high`])}
+                    highMessage={e.high}
+                    premiumStatus={fieldStatus(e.premium, !!touched[`${row.id}:premium`])}
+                    premiumMessage={e.premium}
+                    onField={(f, v) => updateField(row.id, f, v)}
+                    onCommit={(f) => commitField(row.id, f)}
+                    onUnbounded={(next) => setUnbounded(row.id, next)}
+                    onRemove={() => remove(row.id)}
+                  />
+                )
+              })
             : tiers.map((row, i) => <TierRow key={row.id} index={i} editing={false} tier={row} />)}
           {editing && (
             <tr>

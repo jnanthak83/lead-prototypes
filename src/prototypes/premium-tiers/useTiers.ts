@@ -37,12 +37,23 @@ const normalize = (drafts: DraftTier[]): DraftTier[] =>
 export function useTiers() {
   const [tiers, setTiers] = useState<Tier[]>(load)
   const [draft, setDraft] = useState<DraftTier[] | null>(null)
+  // Fields the user has committed (blurred) at least once — keyed `${id}:${field}`.
+  // Until then a fresh field reads as "new" (blue) rather than an error (red).
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const editing = draft !== null
 
   const errors = useMemo(() => (draft ? validateDrafts(draft) : []), [draft])
   const isValid = errors.every((e) => !hasErrors(e))
+  const revealedError = !!draft?.some(
+    (d, i) =>
+      (errors[i].high && touched[`${d.id}:high`]) ||
+      (errors[i].premium && touched[`${d.id}:premium`]),
+  )
 
-  const startEdit = () => setDraft(tiers.map(toDraft))
+  const startEdit = () => {
+    setTouched({})
+    setDraft(tiers.map(toDraft))
+  }
   const cancel = () => setDraft(null)
 
   const save = () => {
@@ -60,10 +71,11 @@ export function useTiers() {
   const updateField = (id: string, field: 'high' | 'premium', value: string) =>
     setDraft((d) => d && d.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
 
-  /** On blur/Enter: turn an infinity trigger into ∞ (last tier), else fold the
-   *  math expression down to its numeric result. Invalid input is left as typed
-   *  so its error stays visible. */
-  const commitField = (id: string, field: 'high' | 'premium') =>
+  /** On blur/Enter: mark the field touched (so an empty one now reads as an
+   *  error), turn an infinity trigger into ∞ (last tier), then fold the math
+   *  expression down to its result. Invalid input is left as typed. */
+  const commitField = (id: string, field: 'high' | 'premium') => {
+    setTouched((t) => ({ ...t, [`${id}:${field}`]: true }))
     setDraft((d) => {
       if (!d) return d
       const i = d.findIndex((r) => r.id === id)
@@ -82,6 +94,7 @@ export function useTiers() {
       next[i] = { ...row, [field]: String(value) }
       return next
     })
+  }
 
   const setUnbounded = (id: string, unbounded: boolean) =>
     setDraft((d) => d && normalize(d.map((r) => (r.id === id ? { ...r, unbounded } : r))))
@@ -100,7 +113,9 @@ export function useTiers() {
     draft,
     editing,
     errors,
+    touched,
     isValid,
+    revealedError,
     startEdit,
     cancel,
     save,

@@ -1,4 +1,5 @@
 import { EditableCell } from './EditableCell'
+import type { FieldStatus } from './validate'
 
 interface HighCellProps {
   value: string
@@ -8,8 +9,8 @@ interface HighCellProps {
   onToggleUnbounded: (next: boolean) => void
   /** Only the last tier may run to ∞, so the toggle only shows there. */
   canBeUnbounded: boolean
-  invalid?: boolean
-  error?: string
+  status: FieldStatus
+  message?: string
   ariaLabel: string
 }
 
@@ -22,8 +23,8 @@ export function HighCell({
   unbounded,
   onToggleUnbounded,
   canBeUnbounded,
-  invalid,
-  error,
+  status,
+  message,
   ariaLabel,
 }: HighCellProps) {
   if (unbounded) {
@@ -53,8 +54,8 @@ export function HighCell({
           prefix="$"
           value={value}
           placeholder='0 (or "inf")'
-          invalid={invalid}
-          error={error}
+          status={status}
+          message={message}
           ariaLabel={ariaLabel}
           onChange={onChange}
           onCommit={onCommit}

@@ -30,9 +30,13 @@ export function TiersCard() {
     >
       <TierTable {...t} />
 
-      {t.editing && !t.isValid && (
-        <p className="text-xs text-error">Fix the highlighted fields before saving.</p>
-      )}
+      {t.editing &&
+        !t.isValid &&
+        (t.revealedError ? (
+          <p className="text-xs text-error">Fix the highlighted fields before saving.</p>
+        ) : (
+          <p className="text-xs text-highlight">Complete the highlighted fields to save.</p>
+        ))}
     </Card>
   )
 }

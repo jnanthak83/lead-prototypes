@@ -31,3 +31,10 @@ export function validateDrafts(drafts: DraftTier[]): TierErrors[] {
 }
 
 export const hasErrors = (e: TierErrors): boolean => Object.keys(e).length > 0
+
+/** How a field should present: a fresh field is "new" (blue), it only turns
+ *  "error" (red) once it's been touched while invalid. */
+export type FieldStatus = 'valid' | 'new' | 'error'
+
+export const fieldStatus = (message: string | undefined, touched: boolean): FieldStatus =>
+  !message ? 'valid' : touched ? 'error' : 'new'
