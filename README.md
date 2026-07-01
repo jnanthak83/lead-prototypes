@@ -7,12 +7,14 @@ on the home page.
 ## Prototypes
 
 - **Premium Tiers** — an editable pricing-tier table (from the Program Config
-  Figma). Read-only until you press **Edit**, then every cell edits inline:
-  - numbers only (letters are rejected as you type),
+  Figma). Starts blank (a fresh setup); press **Edit**, then:
+  - `high` and `premium` accept a number **or a math expression** — `20000000+1`,
+    `5000*12`, `(100+5)/2` — evaluated on blur/Enter,
   - the percentage column shows decimals as percentages (`0.13` → `13.0%`),
-  - `low` / `high` are dollar amounts; leave `high` blank for **∞** (unbounded),
-  - the per-row **⋮** menu adds a tier above/below or deletes it, and **Add tier**
-    appends one,
+  - `low` is **derived** (previous tier's high + 1), so tiers stay contiguous and
+    non-overlapping; deleting a tier re-links the next one automatically,
+  - the last tier can be **unbounded (∞)** — type `inf` (or use the ∞ button),
+  - **Add tier** (the row below the table) appends; each row has a **Delete**,
   - **Save** validates every row and persists to `localStorage`; **Cancel** reverts.
 
 ## Getting started

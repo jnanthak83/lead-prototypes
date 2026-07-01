@@ -3,9 +3,9 @@ import { useId } from 'react'
 interface EditableCellProps {
   value: string
   onChange: (value: string) => void
-  /** Left adornment, e.g. "$". */
+  /** Fired on blur / Enter — used to fold a math expression into its result. */
+  onCommit?: () => void
   prefix?: string
-  /** Right adornment, e.g. "%". */
   suffix?: string
   placeholder?: string
   invalid?: boolean
@@ -13,10 +13,12 @@ interface EditableCellProps {
   ariaLabel: string
 }
 
-/** Inline numeric input with a $/% adornment and an error state. */
+/** Inline input that accepts numbers or math (e.g. 20000000+1), with a
+ *  $/% adornment and an error state. */
 export function EditableCell({
   value,
   onChange,
+  onCommit,
   prefix,
   suffix,
   placeholder,
@@ -42,8 +44,12 @@ export function EditableCell({
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onBlur={onCommit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.currentTarget.blur()
+          }}
           placeholder={placeholder}
-          inputMode="decimal"
+          inputMode="text"
           aria-label={ariaLabel}
           aria-invalid={invalid || undefined}
           aria-describedby={error ? errorId : undefined}

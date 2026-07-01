@@ -1,7 +1,7 @@
 import { EditableCell } from './EditableCell'
 import { HighCell } from './HighCell'
-import { RowMenu } from './RowMenu'
-import { formatCurrency, formatHigh, formatLow, formatPercent, sanitizeDecimal, sanitizeInteger } from './format'
+import { Trash } from '../../components/icons'
+import { formatCurrency, formatHigh, formatLow, formatPercent, sanitizeHigh, sanitizeMath } from './format'
 import type { DraftTier, Tier, TierErrors } from './types'
 
 interface TierRowProps {
@@ -15,9 +15,8 @@ interface TierRowProps {
   isLast?: boolean
   error?: TierErrors
   onField?: (field: 'high' | 'premium', value: string) => void
+  onCommit?: (field: 'high' | 'premium') => void
   onUnbounded?: (next: boolean) => void
-  onAddAbove?: () => void
-  onAddBelow?: () => void
   onRemove?: () => void
 }
 
@@ -57,7 +56,8 @@ export function TierRow(props: TierRowProps) {
           invalid={!!e.high}
           error={e.high}
           ariaLabel={`Tier ${tierNo} high bound`}
-          onChange={(v) => props.onField!('high', sanitizeInteger(v))}
+          onChange={(v) => props.onField!('high', sanitizeHigh(v))}
+          onCommit={() => props.onCommit!('high')}
           onToggleUnbounded={props.onUnbounded!}
         />
       </td>
@@ -69,16 +69,19 @@ export function TierRow(props: TierRowProps) {
           invalid={!!e.premium}
           error={e.premium}
           ariaLabel={`Tier ${tierNo} premium percentage`}
-          onChange={(v) => props.onField!('premium', sanitizeDecimal(v))}
+          onChange={(v) => props.onField!('premium', sanitizeMath(v))}
+          onCommit={() => props.onCommit!('premium')}
         />
       </td>
       <td className={`${cell} pt-3`}>
-        <RowMenu
-          label={`Tier ${tierNo} actions`}
-          onAddAbove={props.onAddAbove!}
-          onAddBelow={props.onAddBelow!}
-          onRemove={props.onRemove!}
-        />
+        <button
+          type="button"
+          aria-label={`Delete tier ${tierNo}`}
+          onClick={props.onRemove}
+          className="flex size-8 items-center justify-center rounded-xs text-muted hover:bg-error-bg hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <Trash className="size-4" />
+        </button>
       </td>
     </tr>
   )

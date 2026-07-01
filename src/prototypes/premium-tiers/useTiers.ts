@@ -1,18 +1,13 @@
 import { useMemo, useState } from 'react'
 import type { DraftTier, Tier } from './types'
+import { evalMath, isInfinityTrigger } from './math'
 import { fromDrafts, toDraft } from './format'
 import { hasErrors, validateDrafts } from './validate'
 
-const STORAGE_KEY = 'lead-prototypes:premium-tiers:v2'
+const STORAGE_KEY = 'lead-prototypes:premium-tiers:v3'
 
-/** Seed data: contiguous, non-overlapping tiers with an unbounded top tier. */
-const SEED: Tier[] = [
-  { id: 't1', low: 0, high: 20_000_000, premium: 0.13 },
-  { id: 't2', low: 20_000_001, high: 50_000_000, premium: 0.11 },
-  { id: 't3', low: 50_000_001, high: 100_000_000, premium: 0.11 },
-  { id: 't4', low: 100_000_001, high: 200_000_000, premium: 0.11 },
-  { id: 't5', low: 200_000_001, high: null, premium: 0.11 },
-]
+/** Blank by default — mirrors a fresh product setup. */
+const SEED: Tier[] = []
 
 function load(): Tier[] {
   try {
@@ -36,8 +31,8 @@ const normalize = (drafts: DraftTier[]): DraftTier[] =>
 
 /**
  * Owns the Premium Tiers state: the persisted table, the edit-mode draft,
- * cross-row validation, and add / remove / update operations. Low bounds are
- * always derived, so ranges stay contiguous and non-overlapping by construction.
+ * cross-row validation, and add / remove / update / commit operations. Low
+ * bounds are always derived, so ranges stay contiguous and non-overlapping.
  */
 export function useTiers() {
   const [tiers, setTiers] = useState<Tier[]>(load)
@@ -65,24 +60,39 @@ export function useTiers() {
   const updateField = (id: string, field: 'high' | 'premium', value: string) =>
     setDraft((d) => d && d.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
 
+  /** On blur/Enter: turn an infinity trigger into ∞ (last tier), else fold the
+   *  math expression down to its numeric result. Invalid input is left as typed
+   *  so its error stays visible. */
+  const commitField = (id: string, field: 'high' | 'premium') =>
+    setDraft((d) => {
+      if (!d) return d
+      const i = d.findIndex((r) => r.id === id)
+      if (i === -1) return d
+      const row = d[i]
+      const next = [...d]
+
+      if (field === 'high' && isInfinityTrigger(row.high)) {
+        if (i !== d.length - 1) return d // only the last tier can be unbounded
+        next[i] = { ...row, unbounded: true, high: '' }
+        return next
+      }
+
+      const value = evalMath(row[field])
+      if (value === null) return d
+      next[i] = { ...row, [field]: String(value) }
+      return next
+    })
+
   const setUnbounded = (id: string, unbounded: boolean) =>
     setDraft((d) => d && normalize(d.map((r) => (r.id === id ? { ...r, unbounded } : r))))
 
-  const insertAt = (index: number, inheritFrom?: DraftTier) =>
+  const addEnd = () =>
     setDraft((d) => {
-      if (!d) return d
-      const next = [...d]
-      next.splice(index, 0, blankDraft(inheritFrom?.unbounded ?? false))
-      return normalize(next)
+      const rows = d ?? []
+      const last = rows[rows.length - 1]
+      return normalize([...rows, blankDraft(last?.unbounded ?? false)])
     })
 
-  const addAbove = (id: string) => insertAt(draft!.findIndex((r) => r.id === id))
-  const addBelow = (id: string) => {
-    const i = draft!.findIndex((r) => r.id === id)
-    // Adding below the last tier hands the unbounded (∞) top to the new last row.
-    insertAt(i + 1, i === draft!.length - 1 ? draft![i] : undefined)
-  }
-  const addEnd = () => insertAt(draft!.length, draft![draft!.length - 1])
   const remove = (id: string) => setDraft((d) => d && normalize(d.filter((r) => r.id !== id)))
 
   return {
@@ -95,9 +105,8 @@ export function useTiers() {
     cancel,
     save,
     updateField,
+    commitField,
     setUnbounded,
-    addAbove,
-    addBelow,
     addEnd,
     remove,
   }

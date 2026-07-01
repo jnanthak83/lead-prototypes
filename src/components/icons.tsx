@@ -1,16 +1,5 @@
 type IconProps = { className?: string }
 
-/** Vertical three-dot "overflow" glyph used for the per-row action menu. */
-export function DotsThreeVertical({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <circle cx="12" cy="5" r="1.7" />
-      <circle cx="12" cy="12" r="1.7" />
-      <circle cx="12" cy="19" r="1.7" />
-    </svg>
-  )
-}
-
 export function Plus({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={className} aria-hidden="true">

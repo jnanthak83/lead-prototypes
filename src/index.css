@@ -42,25 +42,13 @@ body {
 }
 
 /* Motion — a small subset of transitions.dev (Jakubantalik/transitions.dev):
-   the overflow menu grows from its trigger, invalid fields shake, and error
-   messages reveal. Reduced-motion users get none of it. */
+   invalid fields shake and error messages reveal. Reduced-motion users get
+   none of it. */
 :root {
-  --dropdown-open-dur: 250ms;
-  --dropdown-pre-scale: 0.97;
-  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --shake-distance: 6px;
   --shake-overshoot: 4px;
   --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --error-msg-dur: 200ms;
-}
-
-.t-dropdown-in {
-  transform-origin: top right;
-  animation: t-dropdown-in var(--dropdown-open-dur) var(--dropdown-ease);
-}
-@keyframes t-dropdown-in {
-  from { opacity: 0; transform: scale(var(--dropdown-pre-scale)); }
-  to { opacity: 1; transform: scale(1); }
 }
 
 .t-shake { animation: t-input-shake 280ms linear; }
@@ -79,7 +67,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .t-dropdown-in,
   .t-shake,
   .t-error-in {
     animation: none !important;

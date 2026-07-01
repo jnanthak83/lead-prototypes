@@ -1,11 +1,11 @@
 import { deriveLows, formatCurrency } from './format'
+import { evalMath } from './math'
 import type { DraftTier, TierErrors } from './types'
 
 /**
- * Validate the whole draft at once. Because each low is derived from the
- * previous high, ranges can never overlap; we only need each high to be a
- * number greater than its (derived) low, plus a numeric premium. Only the last
- * tier may be unbounded.
+ * Validate the whole draft. Lows are derived, so ranges never overlap; we just
+ * need each high (or math expression) to resolve to a number greater than its
+ * derived low, plus a resolvable premium. Only the last tier may be unbounded.
  */
 export function validateDrafts(drafts: DraftTier[]): TierErrors[] {
   const lows = deriveLows(drafts)
@@ -16,15 +16,15 @@ export function validateDrafts(drafts: DraftTier[]): TierErrors[] {
 
     if (d.unbounded) {
       if (i !== lastIndex) errors.high = 'Only the last tier can be unbounded'
-    } else if (d.high.trim() === '' || Number.isNaN(Number(d.high))) {
-      errors.high = 'Enter a number'
-    } else if (!Number.isNaN(lows[i]) && Number(d.high) <= lows[i]) {
-      errors.high = `Must be greater than ${formatCurrency(lows[i])}`
+    } else {
+      const high = evalMath(d.high)
+      if (high === null) errors.high = 'Enter a number or math (e.g. 20000000+1)'
+      else if (!Number.isNaN(lows[i]) && high <= lows[i]) {
+        errors.high = `Must be greater than ${formatCurrency(lows[i])}`
+      }
     }
 
-    if (d.premium.trim() === '' || Number.isNaN(Number(d.premium))) {
-      errors.premium = 'Enter a number'
-    }
+    if (evalMath(d.premium) === null) errors.premium = 'Enter a number or math'
 
     return errors
   })

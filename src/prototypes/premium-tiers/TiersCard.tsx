@@ -1,6 +1,5 @@
 import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
-import { Plus } from '../../components/icons'
 import { TierTable } from './TierTable'
 import { useTiers } from './useTiers'
 
@@ -31,16 +30,8 @@ export function TiersCard() {
     >
       <TierTable {...t} />
 
-      {t.editing && (
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={t.addEnd}>
-            <Plus className="size-4" />
-            Add tier
-          </Button>
-          {!t.isValid && (
-            <p className="text-xs text-error">Fix the highlighted fields before saving.</p>
-          )}
-        </div>
+      {t.editing && !t.isValid && (
+        <p className="text-xs text-error">Fix the highlighted fields before saving.</p>
       )}
     </Card>
   )

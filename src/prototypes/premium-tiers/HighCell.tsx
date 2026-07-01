@@ -3,6 +3,7 @@ import { EditableCell } from './EditableCell'
 interface HighCellProps {
   value: string
   onChange: (value: string) => void
+  onCommit: () => void
   unbounded: boolean
   onToggleUnbounded: (next: boolean) => void
   /** Only the last tier may run to ∞, so the toggle only shows there. */
@@ -12,10 +13,12 @@ interface HighCellProps {
   ariaLabel: string
 }
 
-/** The high-bound cell: a numeric input, or an ∞ (unbounded) state on the last tier. */
+/** The high-bound cell: a number/math input, or an ∞ (unbounded) state on the
+ *  last tier. Type "inf" (or use the ∞ button) to make it unbounded. */
 export function HighCell({
   value,
   onChange,
+  onCommit,
   unbounded,
   onToggleUnbounded,
   canBeUnbounded,
@@ -27,7 +30,7 @@ export function HighCell({
     return (
       <div className="flex items-center gap-2">
         <span
-          className="flex h-8 flex-1 items-center rounded-xs border border-stroke bg-shift-100 px-2 text-emphasis"
+          className="flex h-8 flex-1 items-center rounded-xs border border-stroke bg-shift-100 px-2 text-sm leading-none text-emphasis"
           aria-label={`${ariaLabel}: unbounded`}
         >
           ∞
@@ -49,20 +52,21 @@ export function HighCell({
         <EditableCell
           prefix="$"
           value={value}
-          placeholder="0"
+          placeholder='0 (or "inf")'
           invalid={invalid}
           error={error}
           ariaLabel={ariaLabel}
           onChange={onChange}
+          onCommit={onCommit}
         />
       </div>
       {canBeUnbounded && (
         <button
           type="button"
-          title="Set to unbounded (∞)"
+          title="Set to unbounded (∞) — or type inf"
           aria-label={`Set ${ariaLabel} to unbounded`}
           onClick={() => onToggleUnbounded(true)}
-          className="flex size-8 shrink-0 items-center justify-center rounded-xs border border-stroke text-default hover:bg-shift-200 hover:text-emphasis focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          className="flex size-8 shrink-0 items-center justify-center rounded-xs border border-stroke text-sm leading-none text-default hover:bg-shift-200 hover:text-emphasis focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           ∞
         </button>

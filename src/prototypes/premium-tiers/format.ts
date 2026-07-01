@@ -1,41 +1,33 @@
+import { evalMath } from './math'
 import type { DraftTier, Tier } from './types'
 
-const usd = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
-
-export const formatCurrency = (n: number): string => usd.format(n)
-export const formatHigh = (n: number | null): string => (n === null ? '∞' : usd.format(n))
-/** Derived low: shows an em dash when it can't be computed yet (previous high blank). */
-export const formatLow = (n: number): string => (Number.isNaN(n) ? '—' : usd.format(n))
+/** Whole-dollar currency with a space after the symbol, e.g. "$ 20,000,000". */
+export const formatCurrency = (n: number): string =>
+  `$ ${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+export const formatHigh = (n: number | null): string => (n === null ? '∞' : formatCurrency(n))
+/** Derived low: em dash when it can't be computed yet (previous high blank/invalid). */
+export const formatLow = (n: number): string => (Number.isNaN(n) ? '—' : formatCurrency(n))
 
 /** Decimal fraction -> percentage string, e.g. 0.13 -> "13.0%". */
 export const formatPercent = (decimal: number): string => `${(decimal * 100).toFixed(1)}%`
 
-/** Keep only digits — currency bounds are whole dollars, no letters allowed. */
-export const sanitizeInteger = (s: string): string => s.replace(/[^0-9]/g, '')
-
-/** Keep digits and a single decimal point — for percentage inputs (e.g. 12.5). */
-export const sanitizeDecimal = (s: string): string => {
-  const cleaned = s.replace(/[^0-9.]/g, '')
-  const [whole, ...rest] = cleaned.split('.')
-  return rest.length ? `${whole}.${rest.join('')}` : cleaned
-}
+/** Allow digits, math operators, parentheses, a dot, and spaces. */
+export const sanitizeMath = (s: string): string => s.replace(/[^0-9.+\-*/() ]/g, '')
+/** Same as math, plus letters and ∞ so the infinity trigger ("inf") can be typed. */
+export const sanitizeHigh = (s: string): string => s.replace(/[^0-9.+\-*/()∞a-zA-Z ]/g, '')
 
 /**
- * The low bound of each tier is derived, never edited: tier 0 starts at 0, and
- * every other tier starts one dollar above the previous tier's high. Returns
- * NaN where it can't be computed (previous high blank or unbounded).
+ * Derived low bound: tier 0 starts at 0; every other tier starts one dollar
+ * above the previous tier's high (evaluating any math expression). NaN when it
+ * can't be computed yet.
  */
 export const deriveLows = (drafts: DraftTier[]): number[] =>
   drafts.map((_, i) => {
     if (i === 0) return 0
     const prev = drafts[i - 1]
-    if (prev.unbounded || prev.high.trim() === '') return NaN
-    const prevHigh = Number(prev.high)
-    return Number.isNaN(prevHigh) ? NaN : prevHigh + 1
+    if (prev.unbounded) return NaN
+    const v = evalMath(prev.high)
+    return v === null ? NaN : v + 1
   })
 
 /** Stored tier -> editable draft. */
@@ -54,8 +46,8 @@ export const fromDrafts = (drafts: DraftTier[]): Tier[] => {
     tiers.push({
       id: d.id,
       low,
-      high: d.unbounded ? null : Number(d.high),
-      premium: Number(d.premium) / 100,
+      high: d.unbounded ? null : (evalMath(d.high) ?? 0),
+      premium: (evalMath(d.premium) ?? 0) / 100,
     })
   })
   return tiers
