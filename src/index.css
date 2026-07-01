@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Lead design tokens — pulled from the Program Config Figma file.
+   Every token here becomes a Tailwind utility (e.g. --color-brand -> bg-brand,
+   text-brand, border-brand; --radius-tile -> rounded-tile). */
+@theme {
+  --color-brand: #3237ff;
+  --color-emphasis: #121215;
+  --color-default: #494d5a;
+  --color-muted: #7e8395;
+  --color-contrast: #ffffff;
+  --color-stroke: #d5d7dd;
+  --color-surface-0: #f7f7f8;
+  --color-surface-100: #ffffff;
+  --color-shift-100: rgba(75, 91, 159, 0.04);
+  --color-shift-200: rgba(75, 91, 159, 0.08);
+  --color-error: #d92d20;
+  --color-error-bg: #fef3f2;
+
+  --radius-tile: 8px;
+  --radius-card: 24px;
+  --radius-pill: 9999px;
+
+  --font-sans: "Lead Sans Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-surface-0);
+  color: var(--color-emphasis);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

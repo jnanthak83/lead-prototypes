@@ -1,0 +1,65 @@
+import { useId } from 'react'
+
+interface EditableCellProps {
+  value: string
+  onChange: (value: string) => void
+  /** Left adornment, e.g. "$". */
+  prefix?: string
+  /** Right adornment, e.g. "%". */
+  suffix?: string
+  placeholder?: string
+  invalid?: boolean
+  error?: string
+  ariaLabel: string
+}
+
+/** Inline numeric input with a $/% adornment and an error state. */
+export function EditableCell({
+  value,
+  onChange,
+  prefix,
+  suffix,
+  placeholder,
+  invalid,
+  error,
+  ariaLabel,
+}: EditableCellProps) {
+  const errorId = useId()
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span
+        className={`flex h-8 items-center gap-1 rounded-xs border bg-surface-100 px-2 ${
+          invalid
+            ? 'border-error ring-1 ring-error'
+            : 'border-stroke focus-within:border-brand focus-within:ring-1 focus-within:ring-brand'
+        }`}
+      >
+        {prefix && (
+          <span aria-hidden="true" className="select-none text-muted">
+            {prefix}
+          </span>
+        )}
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          inputMode="decimal"
+          aria-label={ariaLabel}
+          aria-invalid={invalid || undefined}
+          aria-describedby={error ? errorId : undefined}
+          className="w-full min-w-0 bg-transparent text-emphasis outline-none placeholder:text-muted"
+        />
+        {suffix && (
+          <span aria-hidden="true" className="select-none text-muted">
+            {suffix}
+          </span>
+        )}
+      </span>
+      {error && (
+        <span id={errorId} role="alert" className="text-xs text-error">
+          {error}
+        </span>
+      )}
+    </div>
+  )
+}
