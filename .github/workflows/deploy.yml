@@ -1,10 +1,14 @@
 name: Deploy to GitHub Pages
 
-# Builds the Vite app and publishes it to GitHub Pages whenever this branch
-# is pushed. In the repo: Settings → Pages → Source → "GitHub Actions" (once).
+# Two environments on one Pages site:
+#   production  (branch: lead-prototypes)  ->  /
+#   staging     (branch: staging)          ->  /staging/
+# Each environment is built from its OWN branch, so pushing to `staging` only
+# changes /staging/ — production's content is rebuilt from lead-prototypes and
+# stays identical. A push to either branch redeploys the whole site.
 on:
   push:
-    branches: [lead-prototypes]
+    branches: [lead-prototypes, staging]
   workflow_dispatch:
 
 permissions:
@@ -20,17 +24,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout production branch
+        uses: actions/checkout@v7
+        with:
+          ref: lead-prototypes
+          path: prod
+      - name: Checkout staging branch
+        uses: actions/checkout@v7
+        with:
+          ref: staging
+          path: staging
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      - name: Build production
+        working-directory: prod
+        run: npm ci && npm run build
+      - name: Build staging
+        working-directory: staging
+        env:
+          VITE_APP_ENV: staging
+        run: npm ci && npm run build
+      - name: Assemble site (production at root, staging under /staging)
+        run: |
+          mkdir -p site
+          cp -r prod/dist/. site/
+          mkdir -p site/staging
+          cp -r staging/dist/. site/staging/
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: site
 
   deploy:
     needs: build

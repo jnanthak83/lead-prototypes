@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { EnvBadge } from './components/EnvBadge'
 import { Home } from './components/Home'
 import { prototypes } from './prototypes/registry'
 
@@ -16,7 +17,11 @@ function useHashRoute(): string {
 export function App() {
   const slug = useHashRoute()
   const active = prototypes.find((p) => p.slug === slug)
-  if (!active) return <Home />
-  const { Component } = active
-  return <Component />
+  const Component = active?.Component
+  return (
+    <>
+      {Component ? <Component /> : <Home />}
+      <EnvBadge />
+    </>
+  )
 }
